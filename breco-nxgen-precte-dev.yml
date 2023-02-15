@@ -1,0 +1,154 @@
+spring:
+  application:
+    name: breco-nxgen-precte
+  jpa:
+    show-sql: true
+    properties:
+      hibernate.jdbc.batch_size: 20 
+  datasource:
+    url: ${vcap.services.DB_CREDS_UPS.credentials.DbUrl}
+    username: ${vcap.services.DB_CREDS_UPS.credentials.DbUserId}
+    password: ${vcap.services.DB_CREDS_UPS.credentials.DbPassword}
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    hikari:
+      minimum-idle: 15
+      maximum-pool-size: 50
+      idleTimeout: 600000
+      max-lifetime: 1200000
+      connection-timeout: 2000
+      pool-name: hikari-cp-breco-nxgen-precte-pool
+      initialization-fail-timeout: 1000
+      connection-init-sql: SELECT 1 FROM DUAL
+      validation-timeout: 2000
+      data-source-properties:
+        oracle.jdbc.implicitStatementCacheSize: 50
+  cloud:
+    config:
+      uri: ${CONFIG_URI}
+
+breco:
+  actuator:
+    healthcheck:
+      enabled: true
+  scheduler:
+    shopee:
+      automatch:
+        enabled: true
+        time: 30000
+    automatch:
+      enabled: true
+      time: 600000
+      locktime: 500000
+      count: 500
+    nferefresh:
+      time: 300000
+      count: 100
+  cte:
+    url: https://breco-nxgen-zuul-dev.app.wtcdev1.paas.fedex.com/breco-nxgen-cte/okta/v1/precte/check
+  trigger:
+    url: https://breco-nxgen-zuul-dev.app.wtcdev1.paas.fedex.com/breco-nxgen-cte/okta/v1/precte/check
+  custcte:
+    url: https://breco-nxgen-zuul-dev.app.wtcdev1.paas.fedex.com/breco-nxgen-cte/okta/v1/customer/cte/precte
+  jms:
+    message:
+      acknowledge : true
+  cors:
+    allowed:
+      origins: breco-nxgen-zuul-dev.app.wtcdev1.paas.fedex.com
+  shope:
+    scheduler: false
+
+logging:
+  level:
+    com.fedex.nxgen.precte: debug
+    com.fedex.mi.decorator.jms: FATAL
+    com.fedex.framework.security: debug
+    net.javacrumbs.shedlock: debug
+    org.springframework.ws.client.MessageTracing.sent: TRACE
+    org.springframework.ws.client.MessageTracing.received: TRACE
+    com.fedex.nxgen.precte.aspect: DEBUG
+
+com:
+  fedex:
+    framework:
+      core:
+        app:
+          id: APP3535767
+      security:
+        service:
+          authentication:
+            ldap:
+              url: ldap://dirdev.corp.fedex.com:389/ou=people,o=fedex,c=us
+        client:
+          credentials:
+            provider: 
+              type: VAULT
+              url: ${vcap.services.test-vault-instance.credentials.vaulturl}
+              token: ${vcap.services.test-vault-instance.credentials.vaulttoken}
+              path: secret/data/APP3535767/devtest
+            pem: 
+            password:
+
+management:
+  health:
+    config:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: 
+          - info
+          - health
+          - refresh
+          - loggers
+          - configprops
+          - beans
+          - metrics
+          - heapdump
+          - threaddump
+          - caches
+    
+ecnpj.key.pem: ${ECNPJ_A1_CERT}
+sefaz.trust.pem: ${SEFAZ_TRUST_STORE}
+
+jms.jndi.context-factory: com.fedex.mi.decorator.jms.FedexTibcoInitialContext
+jms.jndi.context-url: ldap://apptstldap.corp.fedex.com:389/ou=messaging,dc=corp,dc=fedex,dc=com
+jms.jndi.connection-factory : fxClientUID=VS.3535767.ESE.LAC-BR.QCF.PLA.L4
+jms.jndi.name: FXSHIP.FX.ESE.LAC-BR-BRE-3535767
+jms.jndi.username : LAC-BR-BRE-3535767
+jms.jndi.password : c3KSlqipjNjwLnQqT21qDfmMN
+
+sefaz.url: https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx
+sefaz.cpnj.limit: 15 
+ 
+podscan.service.url: https://breco-nxgen-zuul-dev.app.wtcdev1.paas.fedex.com/breco-nxgen-cte/okta/v1/cte/savePodScans
+usl.service.url: http://ciusldev.ute.fedex.com/service/customerAccountService.v2.wsdl
+
+#Correios.webservice.soapEndpointUrl: https://apps.correios.com.br/SigepMasterJPA/AtendeClienteService/AtendeCliente?wsdl
+Correios.webservice.soapEndpointUrl: https://apps.correios.com.br/SigepMasterJPA/AtendeClienteService/AtendeCliente
+Correios.webservice.soapAction: http://cliente.bean.master.sigep.bsb.correios.com.br/consultaCEP
+
+# Remove this property altogether when cert expires
+redux:
+  enabled: true
+
+okta:
+  enabled: false
+  client:
+    enabled: true
+  oauth2:
+    audience: APP3535767
+    issuer: https://purpleid-test.oktapreview.com/oauth2/aus1be0djy9KjreN10h8
+  clients:
+    breco:
+      issuer: https://purpleid-test.oktapreview.com/oauth2/aus1be0djy9KjreN10h8
+      client-id: ${OKTA_BRECO_CLIENT_ID}
+      client-secret: ${OKTA_BRECO_CLIENT_SECRET}
+      scope: BRECO_SCOPE
+      enabled: true
+
+cache:
+  max-size: 50
+  expiry-in-mins: 50
+
+okta.enabled: false
